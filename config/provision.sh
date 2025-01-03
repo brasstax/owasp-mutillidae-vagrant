@@ -29,14 +29,13 @@ tweak_apache_dir_conf() {
 }
 
 install_mysql() {
-  echo "mysql-server-5.5 mysql-server/root_password password \"''\"" | debconf-set-selections
-  echo "mysql-server-5.5 mysql-server/root_password_again password \"''\"" | debconf-set-selections
-  apt install -y mysql-server libapache2-mod-auth-mysql php5-mysql
-  mysql_install_db
+  apt install -y mysql-server php-mysql
+  echo "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'mutillidae'; FLUSH PRIVILEGES;" | mysql -u root
+  mysql_secure_installation -u root --password="mutillidae" --use-default
 }
 
-install_php_5() {
-  sudo apt-get install -y php5 php5-mysql php-pear php5-gd  php5-mcrypt php5-curl
+install_php() {
+  sudo apt-get install -y php php-pear php-gd php-curl
 }
 
 install_phpinfo() {
@@ -52,7 +51,7 @@ test_php() {
 }
 
 pull_latest_mutillidae() {
-  GIT_REPO="git://git.code.sf.net/p/mutillidae/git"
+  GIT_REPO="https://github.com/webpwnized/mutillidae"
 
   if [ ! -d "/vagrant/external/mutillidae" ]; then
     cd /vagrant/external
@@ -61,14 +60,14 @@ pull_latest_mutillidae() {
     cd /vagrant/external/mutillidae
     git remote set-url origin "${GIT_REPO}"
     git fetch
-    git checkout master
-    git reset --hard origin/master
+    git checkout main
+    git reset --hard origin/main
   fi
 }
 
 install_mutillidae() {
   rm -rf /var/www/html/mutillidae
-  cp -R /vagrant/external/mutillidae /var/www/html/mutillidae
+  cp -R /vagrant/external/mutillidae/src /var/www/html/mutillidae
 }
 
 
@@ -81,7 +80,7 @@ install_git
 install_apache
 tweak_apache_dir_conf
 install_mysql
-install_php_5
+install_php
 install_phpinfo
 test_php
 pull_latest_mutillidae
